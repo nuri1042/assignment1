@@ -43,7 +43,6 @@ export const useInfiniteScroll = () => {
     return () => observer.disconnect();
   }, [
     hasMore,
-    // loading,
     list.length, // 새 데이터가 들어왔을 때만 Observer를 재등록하기 위해 필요
   ]);
 
