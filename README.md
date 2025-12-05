@@ -1,6 +1,7 @@
 # Assignment 2 - Infinite Scroll Post List (React + Zustand + TypeScript)
 
-사용자가 스크롤을 내릴 때 자동으로 다음 페이지 데이터를 불러오는 **무한 스크롤 (Infinite Scroll)** 기능을 구현한 React 프로젝트
+스크롤을 내릴 때 자동으로 다음 페이지 데이터를 불러오는 **무한 스크롤 (Infinite Scroll)** 기능을 구현한 React 프로젝트
+
 `Intersection Observer API`를 활용한 스크롤 경험을 제공
 
 ---
@@ -69,5 +70,5 @@ npm run dev
 
 ### 모바일 | 데스크톱
 
-- Tailwind 기 뷰포트 기준 레이아웃 구성
+- Tailwind 기반 뷰포트 기준 레이아웃 구성
 - max-width + w-full 조합으로 중앙 정렬 및 세로 스크롤 활성화
