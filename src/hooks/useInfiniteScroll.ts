@@ -1,55 +1,51 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { getPosts, type PostType } from "../apis/scrollApi";
+import { useEffect, useRef } from "react";
+import { getPosts } from "../apis/scrollApi";
+import { usePostStore } from "../store/postStore";
 
 export const useInfiniteScroll = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const [page, setPage] = useState<number>(1);
-  const [list, setList] = useState<PostType[]>([]);
+  const { loading, hasMore, list, loadPosts } = usePostStore();
 
+  // 하단 감지용 요소 ref
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const loadData = useCallback(async () => {
-    if (loading || !hasMore) return;
-
-    setLoading(true);
-
-    try {
-      const data = await getPosts(page);
-
-      if (data.length === 0) {
-        setHasMore(false);
-      } else {
-        setList((prev) => [...prev, ...data]);
-        setPage((prev) => prev + 1);
-      }
-    } catch (error) {
-      console.error("데이터 로드 실패:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [loading, page, hasMore]);
-
-  // IntersectionObserver
   useEffect(() => {
-    if (!bottomRef.current || !hasMore || loading) return;
+    const target = bottomRef.current;
+    if (!target) return;
 
+    // 더 불러올 데이터가 없거나 OR 현재 로딩 중이면 Observer 등록 안 함
+    if (!hasMore || loading) return;
+
+    // IntersectionObserver 생성
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !loading && hasMore) {
-          loadData();
+        const entry = entries[0];
+
+        // 화면에 보이고 + 로딩 중이 아니고 + 다음 데이터가 있을 때
+        if (entry.isIntersecting && !loading && hasMore) {
+          // API 호출 실행
+          loadPosts(getPosts);
+
+          // API를 한 번 호출한 직후 바로 관찰 해제 (중복 호출 방지)
+          observer.unobserve(target);
         }
       },
       {
+        // rootMargin으로 미리 감지
+        rootMargin: "150px",
         threshold: 0,
-        rootMargin: "100px",
       }
     );
 
-    observer.observe(bottomRef.current);
+    // 감지 시작
+    observer.observe(target);
 
+    // cleanup: Observer 해제
     return () => observer.disconnect();
-  }, [hasMore, loading]);
+  }, [
+    hasMore,
+    // loading,
+    list.length, // 새 데이터가 들어왔을 때만 Observer를 재등록하기 위해 필요
+  ]);
 
   return { list, loading, bottomRef, hasMore };
 };
